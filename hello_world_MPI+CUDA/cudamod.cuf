@@ -1,0 +1,57 @@
+module cudamod
+
+	use cudafor
+
+	implicit none
+
+	contains
+	
+	subroutine gpu_init(rank)
+		integer:: gpus,ierr,istat,GPU,rank
+		ierr=cudaGetDeviceCount(gpus)
+		print*, 'GPUs:',gpus
+		do GPU = 0,7
+			istat=cudaSetDevice(GPU)
+			call hello_gpukern<<<1,1>>>(GPU,rank)
+		end do
+	end subroutine gpu_init
+	
+	subroutine usegpu(rank)
+
+		implicit none
+
+		integer, intent(in) :: rank
+		integer :: istat, nblock, ngrid
+
+		ngrid = 32
+		nblock = 32
+		if (rank .eq. 0) then
+			istat = cudaSetDevice(0)
+		end if
+
+		call gpukern<<<ngrid, nblock>>>()
+
+		return
+
+	end subroutine usegpu
+
+	attributes(global) subroutine gpukern()
+		implicit none
+		integer :: i
+
+		i = (blockidx%x-1)*blockdim%x + threadidx%x
+
+		return
+	end subroutine gpukern
+	
+	attributes(global) subroutine hello_gpukern(GPU,rank)
+		implicit none
+		integer :: i
+		integer,value, intent(in) :: GPU,rank
+
+		print*, 'hello world from Rank ',rank,' GPU ',GPU,'!'
+
+		return
+	end subroutine hello_gpukern
+	
+end module cudamod
