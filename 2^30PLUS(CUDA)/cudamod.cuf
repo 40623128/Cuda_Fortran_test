@@ -1,0 +1,30 @@
+module cudamod
+
+	use cudafor
+
+	implicit none
+
+	contains
+	
+	subroutine gpu_init(rank)
+		integer:: gpus,ierr,istat,GPU,rank
+		ierr=cudaGetDeviceCount(gpus)
+		print*, 'GPUs:',gpus
+	end subroutine gpu_init
+
+	attributes(global) subroutine gpu_add_kern(result, n)
+		implicit none
+		integer, device, intent(out) :: result
+		integer, value, intent(in) :: n
+		integer :: tid
+		
+		tid = (blockIdx%x - 1) * blockDim%x + threadIdx%x
+		result = 0
+		do while (tid <= n)
+			result = result + 1
+			tid = tid + blockDim%x * gridDim%x
+		end do
+		return
+	end subroutine gpu_add_kern
+	
+end module cudamod
