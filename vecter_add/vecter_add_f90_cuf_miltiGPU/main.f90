@@ -4,7 +4,7 @@ program main
 	use cudamod
 	implicit none
 
-	
+
 	type(dim3) :: blockSize, gridSize
 	real(8) :: sum_num
 	integer :: i
@@ -26,29 +26,34 @@ program main
 	real(8), device, dimension(:), allocatable :: d_b
 	!Host output vector
 	real(8), device, dimension(:), allocatable :: d_c
+	
+	!integer(kind=cuda_stream_kind), dimension(:), allocatable ::g_stream
 	type(cudadeviceprop):: prop
+	!type(cudaEvent) :: event
 	
 	! GPU Initialize
 	call gpu_init(num_gpus)
+
 	
-	n = 80000
+	n = 800000
 	gpu_n = n / num_gpus
 	
-	
 	allocate(gpu_devices(num_gpus))
+	!allocate(g_stream(num_gpus))
 	do i = 1, num_gpus
         gpu_devices(i) = i - 1
     end do
-	
 	! Allocate memory for each vector on host
 	allocate(h_a(num_gpus, gpu_n))
 	allocate(h_b(num_gpus, gpu_n))
 	allocate(h_c(num_gpus, gpu_n))
+			
+	
 	print*, 'allocate host memory completed'
 	! Allocate memory for each vector on GPU
-
 	
-
+	
+	
 	! Initialize content of input vectors, vector a[i] = sin(i)^2 vector b[i] = cos(i)^2
 	do GPU = 1, num_gpus
 		do i = 1, gpu_n
@@ -64,30 +69,35 @@ program main
 		istat=cudaSetDevice(gpu_devices(GPU))
 		istat=cudaGetDeviceProperties(prop,gpu_devices(GPU))
 		print *, 'device name = ',trim(prop%name)
+		!istat = cudaStreamCreate(g_stream(GPU))
+		!istat = cudaEventCreate(event)
 	end do
+	
 	
 	do GPU = 1, num_gpus
 		istat=cudaSetDevice(gpu_devices(GPU))
 		allocate(d_a(gpu_n))
 		allocate(d_b(gpu_n))
 		allocate(d_c(gpu_n))
-		
-		istat=cudaMemcpy(d_a, h_a(GPU,:),gpu_n,cudaMemcpyHostToDevice)
-		istat=cudaMemcpy(d_b, h_b(GPU,:),gpu_n,cudaMemcpyHostToDevice)
+		!istat=cudaMemcpyAsync(d_a, h_a(GPU,:), gpu_n, cudaMemcpyHostToDevice, g_stream(GPU))
+		!istat=cudaMemcpyAsync(d_b, h_b(GPU,:), gpu_n, cudaMemcpyHostToDevice, g_stream(GPU))
+		istat=cudaMemcpy(d_a, h_a(GPU,:), gpu_n, cudaMemcpyHostToDevice)
+		istat=cudaMemcpy(d_b, h_b(GPU,:), gpu_n, cudaMemcpyHostToDevice)
 		
 		blockSize = dim3(1024,1,1)
 		gridSize = dim3(ceiling(real(gpu_n)/real(blockSize%x)) ,1,1)
-		
+		!istat = cudaEventSynchronize(event)
 		call vecAdd_kernel<<<gridSize, blockSize>>>(gpu_n, d_a, d_b, d_c)
-		call test_kernel<<<gridSize, blockSize>>>()
-		istat = cudaDeviceSynchronize()
 	end do
 	
 	print*,'calculate completed'
 	
 	do GPU = 1, num_gpus
 		istat=cudaSetDevice(gpu_devices(GPU))
-		istat=cudaMemcpy(h_c(GPU,:), d_c,gpu_n,cudaMemcpyDeviceToHost)
+		istat=cudaMemcpy(h_c(GPU,:), d_c, gpu_n, cudaMemcpyDeviceToHost)
+		!istat=cudaMemcpyAsync(h_c(GPU,:), d_c, gpu_n, cudaMemcpyDeviceToHost, stream1)
+
+		!istat = cudaDeviceSynchronize()
 	end do
 	print*,'copy data of device to host completed'
  
