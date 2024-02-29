@@ -1,4 +1,4 @@
-EXE:=mpigpu
+EXE:=main
 
 FCCUDA:=nvfortran
 FCMPI:=mpif90

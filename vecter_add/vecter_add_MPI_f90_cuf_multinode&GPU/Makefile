@@ -1,11 +1,11 @@
-EXE:=main
+EXE:=mpigpu
 
 FCCUDA:=nvfortran
 FCMPI:=mpif90
 
 FCFLAGS:=-O0 -traceback
 
-FILES:= kernel.o main.o
+FILES:= kernel.o cudamod.o mpimod.o main.o 
 
 MODS:=$(wildcard *.mod)
 
@@ -19,11 +19,17 @@ all: ${EXE}
 ${EXE}: ${FILES} ${MODS}
 	${FCMPI} -cuda -o $@ ${FILES}
 
+cudamod.o:
+	${FCCUDA} ${FCFLAGS} -cuda -c cudamod.cuf
+
 kernel.o:
 	${FCCUDA} ${FCFLAGS} -cuda -c kernel.cuf
 
+mpimod.o:
+	${FCMPI} ${FCFLAGS} -cuda -c mpimod.f90 -lmpi
+
 main.o:
-	${FCMPI} ${FCFLAGS} -cuda -c main.f90
+	${FCMPI} ${FCFLAGS} -cuda -c main.f90 -lmpi
 
 %.mod: %.f90
 	@echo “Some modules are out of date. Do clean and then recompile”

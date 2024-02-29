@@ -42,11 +42,11 @@ program main
 	d_b = h_b(1:n)
 	
 	! Number of threads in each thread block
-	!blockSize = dim3(1024,1,1)
-	blockSize = 1024
+	blockSize = dim3(1024,1,1)
+	!blockSize = 1024
 	! Number of thread blocks in grid
 	gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
-	gridSize = ceiling(real(n)/real(blockSize%x))
+	!gridSize = ceiling(real(n)/real(blockSize%x))
 	! Execute the kernel
     call vecAdd_kernel<<<gridSize, blockSize>>>(n, d_a, d_b, d_c)
  

@@ -59,20 +59,20 @@ program main
 	if (remainder == 0) then
 		print *, 'remainder=', remainder, 'rank=', rank, 'host_n=', host_n
 		do i=1,host_n
-			h_a(i) = sin((i+rank*host_n)*1D0)*sin((i+rank*host_n)*1D0)
-			h_b(i) = cos((i+rank*host_n)*1D0)*cos((i+rank*host_n)*1D0)
+			h_a(i) = sin((i+rank*host_n)*1D0)**2
+			h_b(i) = cos((i+rank*host_n)*1D0)**2
 		end do
 	else
 		print *, 'remainder=', remainder, 'rank=', rank, 'host_n=', host_n
 		if (rank <remainder) then
 			do i=1,host_n
-				h_a(i) = sin((i+rank*host_n)*1D0)*sin((i+rank*host_n)*1D0)
-				h_b(i) = cos((i+rank*host_n)*1D0)*cos((i+rank*host_n)*1D0)
+				h_a(i) = sin((i+rank*host_n)*1D0)**2
+				h_b(i) = cos((i+rank*host_n)*1D0)**2
 			end do
 		else
 			do i=1,host_n
-				h_a(i) = sin((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)*sin((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)
-				h_b(i) = cos((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)*cos((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)
+				h_a(i) = sin((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)**2
+				h_b(i) = cos((i+(rank-remainder)*host_n+remainder*(host_n+1))*1D0)**2
 			end do
 		end if
 	end if
@@ -107,7 +107,7 @@ program main
     call MPI_REDUCE(sum_num, final_result, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 	
 	if (rank == 0) then
-		print *, 'final result: ', final_result
+		print *, 'final result: ', final_result/n
 	end if
  
     ! Release device memory
