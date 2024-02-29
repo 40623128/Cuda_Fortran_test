@@ -101,12 +101,8 @@ program main
 	end if
 	print *, 'h_a h_b'
 	
-	! Implicit copy of host vectors to device
-	!do GPU = 0,7
-	!	istat=cudaSetDevice(GPU)
 	d_a = h_a
 	d_b = h_b
-	!end do
 	print *, 'd_a(GPU+1,:) = h_a(GPU+1,:)'
 	ierr = cudaDeviceSynchronize()
 	
