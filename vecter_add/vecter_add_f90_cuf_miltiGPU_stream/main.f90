@@ -86,7 +86,7 @@ program main
 		!istat = cudaEventSynchronize(event)
 		call vecAdd_kernel<<<gridSize, blockSize, g_stream(GPU)>>>(gpu_n, d_a, d_b, d_c)
 		istat=cudaMemcpyAsync(h_c(GPU,:), d_c, gpu_n, cudaMemcpyDeviceToHost, g_stream(GPU))
-		!istat = cudaDeviceSynchronize()
+		istat = cudaDeviceSynchronize()
 	end do
 	
 	print*,'calculate completed'
