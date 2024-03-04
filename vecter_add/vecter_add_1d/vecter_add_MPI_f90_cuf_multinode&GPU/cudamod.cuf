@@ -10,7 +10,7 @@ module cudamod
 		integer, intent(out) :: num_gpu
 		integer:: ierr,istat,GPU
 		ierr=cudaGetDeviceCount(num_gpu)
-		print*, 'GPUs:', num_gpu
+		!print*, 'GPUs:', num_gpu
 	end subroutine gpu_init
 	
 	subroutine usegpu(rank)

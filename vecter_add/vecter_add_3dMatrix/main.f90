@@ -49,23 +49,29 @@ program main
 			do k = 1, n_z
 				h_a(i,j,k) = sin(i*j*k*1D0)**2
 				h_b(i,j,k) = cos(i*j*k*1D0)**2
+				h_c(i,j,k) = 0.3D0
 			end do
 		end do
 	end do
 	
 	!copy host vectors to device
-	error = cudaMemcpy(d_a(:,:,:), h_a(:,:,:), n_x*n_y*n_z, cudaMemcpyHostToDevice)
-	error = cudaMemcpy(d_b(:,:,:), h_b(:,:,:), n_x*n_y*n_z, cudaMemcpyHostToDevice)
+	error = cudaMemcpy(d_a, h_a, n_x*n_y*n_z, cudaMemcpyHostToDevice)
+	error = cudaMemcpy(d_b, h_b, n_x*n_y*n_z, cudaMemcpyHostToDevice)
 	
 	!Number of threads in each thread block
+	! blockSize = dim3(x,y,z)
+	! x , y <= 1024
+	! z <= 64
+	! x*y*z <=1024
 	blockSize = dim3(8,8,8)
 	! Number of thread blocks in grid
-	gridSize = dim3(ceiling(real(n_x)/real(blockSize%x)) ,ceiling(real(n_y)/real(blockSize%y)),ceiling(real(n_z)/real(blockSize%z)))
+	gridSize = dim3(ceiling(real(n_x)/real(blockSize%x)),&
+					ceiling(real(n_y)/real(blockSize%y)),&
+					ceiling(real(n_z)/real(blockSize%z)))
 	! Execute the kernel
-	
     call vecAdd_kernel<<<gridSize, blockSize>>>(n, d_a, d_b, d_c)
     ! copy device array to host
-	error = cudaMemcpy(h_c(:,:,:), d_c(:,:,:), n_x*n_y*n_z, cudaMemcpyDeviceToHost)
+	error = cudaMemcpy(h_c, d_c, n_x*n_y*n_z, cudaMemcpyDeviceToHost)
 	
     sum_num = 0.0;
 	do i = 1, n_x
