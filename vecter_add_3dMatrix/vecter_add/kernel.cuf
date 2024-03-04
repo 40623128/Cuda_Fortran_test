@@ -1,0 +1,25 @@
+module kernel
+    contains
+    ! CUDA kernel. Each thread takes care of one element of c
+    attributes(global) subroutine vecAdd_kernel(n, a, b, c)
+        integer, value :: n
+        real(8), device :: a(n,n,n), b(n,n,n), c(n,n,n)
+        integer :: id_x, id_y, id_z
+ 
+        ! Get our global thread ID
+        id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
+		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
+		!print *, 'a = ',a(1,1,1)
+        ! Make sure we do not go out of bounds
+		!print *, 'id_x = ',id_x, 'id_y = ', id_y, 'id_z = ', id_x
+		if (id_x <= n) then
+			if (id_y <= n) then
+				if (id_z <= n) then
+					c(id_x,id_y,id_z) = a(id_x,id_y,id_z) + b(id_x,id_y,id_z)
+					!print *, 'c = ',c(1,1,1)
+				end if
+			end if
+        end if
+    end subroutine vecAdd_kernel
+end module kernel
