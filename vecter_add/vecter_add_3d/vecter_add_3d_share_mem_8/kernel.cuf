@@ -18,11 +18,11 @@ module kernel
     end subroutine vecAdd_kernel
 	
 	
-	attributes(global) subroutine vecAdd_kernel_shared(n, a, b, c)
+	attributes(global) subroutine vecAdd_kernel_shared(a, b, c)
         integer, value :: n
         integer :: id_x, id_y, id_z
-		real(8), device :: a(n,n,n), b(n,n,n), c(n,n,n)
-		real(8), shared :: s_a(16,16,16)
+		real(8), device :: a(14,14,14), b(14,14,14), c(14,14,14)
+		real(8), shared :: s_a(14,14,14)
 		
 		! Get our global thread ID
         id_x = (blockidx%x-1)*blockdim%x + threadidx%x
@@ -30,7 +30,6 @@ module kernel
 		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
 		
 		s_a(id_x,id_y,id_z) = a(id_x,id_y,id_z)
-		!print*, "id_x = ", id_x, "id_y = ", id_y, "id_z = ", id_z
 		
 		if (id_x <= n .and. id_y <= n .and. id_z <= n) then
 			s_a(id_x,id_y,id_z) = s_a(id_x,id_y,id_z)+1.d0

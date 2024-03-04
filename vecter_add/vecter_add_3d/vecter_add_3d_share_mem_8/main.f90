@@ -21,8 +21,35 @@ program main
 	real(8),device,dimension(:,:,:),allocatable :: d_b
 	!Host output vector
 	real(8),device,dimension(:,:,:),allocatable :: d_c
+	real(8),device,dimension(:,:,:),allocatable :: d_a
+	
+	!integer ishap(3)
+	!integer,pointer,device :: idev(:,:,:)
+	!type(cudaPitchedPtr) :: devPtr
+	type(cudaExtent) :: extent
+	type(cudaPos) :: offsetPos
+	!
+	!extent%width = 14
+	!extent%height = 14
+	!extent%depth = 14
+	!offsetPos%x =
+	!offsetPos%y =
+	!offsetPos%z =
+	!error = cudaMalloc3D(devPtr, extent)
+	!ishap(1) = devPtr%pitch / 4
+	!ishap(2) = n
+	!ishap(3) = p
+	!
+	!call c_f_pointer(devPtr%ptr, idev, ishap)
+	!error = cudaMemset3D(devPtr, 9, extent)
+	!call c_f_pointer(devPtr%ptr, idev, ishap)
+	!wz=idev(1:m,1:n,1:p)
+	!write(*,*),'wz =',wz(1,1,:)
+	
+	
+	!cudaMalloc3D
 	! 
-	n = 16
+	n = 24
 	n_x = n
 	n_y = n
 	n_z = n
@@ -54,6 +81,7 @@ program main
 	end do
 	
 	!copy host vectors to device
+	error = cudaMemcpy3D(d_a,0,0,h_a,)
 	error = cudaMemcpy(d_a, h_a, n_x*n_y*n_z, cudaMemcpyHostToDevice)
 	error = cudaMemcpy(d_b, h_b, n_x*n_y*n_z, cudaMemcpyHostToDevice)
 	
