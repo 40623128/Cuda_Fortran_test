@@ -10,12 +10,8 @@ module kernel
         id_x = (blockidx%x-1)*blockdim%x + threadidx%x
 		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
 		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
-		if (id_x <= n) then
-			if (id_y <= n) then
-				if (id_z <= n) then
-					c(id_x,id_y,id_z) = a(id_x,id_y,id_z) + b(id_x,id_y,id_z)
-				end if
-			end if
+		if (id_x <= n .and. id_y <= n .and. id_z <= n) then
+			c(id_x,id_y,id_z) = a(id_x,id_y,id_z) + b(id_x,id_y,id_z)
         end if
     end subroutine vecAdd_kernel
 end module kernel
