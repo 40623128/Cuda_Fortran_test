@@ -12,7 +12,7 @@ module kernel
 		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
 		
 		if (id_x <= n .and. id_y <= n .and. id_z <= n) then
-			c(id_x,id_y,id_z) = a(id_x,id_y,id_z)+1.d0
+			c(id_x,id_y,id_z) = a(id_x,id_y,id_z)+b(id_x,id_y,id_z)
         end if
 
     end subroutine vecAdd_kernel

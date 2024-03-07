@@ -1,0 +1,33 @@
+module kernel
+    contains
+    ! CUDA kernel. Each thread takes care of one element of c
+    attributes(global) subroutine vecAdd_kernel(n_x, n_y, n_z, a_1, a_2, a_3, a_4, a_5, c)
+        integer, value :: n_x, n_y, n_z
+        !real(8), device :: a(n_x, n_y, n_z, 5)
+		!real(8), device :: b(n_x, n_y, n_z, 5)
+		!real(8), device :: c(n_x, n_y, n_z, 5)
+		
+		real(8), device :: a_1(n_x, n_y, n_z)
+		real(8), device :: a_2(n_x, n_y, n_z)
+		real(8), device :: a_3(n_x, n_y, n_z)
+		real(8), device :: a_4(n_x, n_y, n_z)
+		real(8), device :: a_5(n_x, n_y, n_z)
+		real(8), device :: c(n_x, n_y, n_z)
+		!real(8), device :: c_2(n_x, n_y, n_z)
+		!real(8), device :: c_3(n_x, n_y, n_z)
+		!real(8), device :: c_4(n_x, n_y, n_z)
+		!real(8), device :: c_5(n_x, n_y, n_z)
+        integer :: id_x, id_y, id_z
+		integer :: i
+ 
+        ! Get our global thread ID
+        id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
+		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
+		if (id_x <= n_x .and. id_y <= n_y .and. id_z <= n_z) then
+			c(id_x, id_y, id_z) = a_1(id_x, id_y, id_z)+a_2(id_x, id_y, id_z)+a_3(id_x, id_y, id_z)+a_4(id_x, id_y, id_z)+a_5(id_x, id_y, id_z)
+        end if
+		
+		!
+    end subroutine vecAdd_kernel
+end module kernel
