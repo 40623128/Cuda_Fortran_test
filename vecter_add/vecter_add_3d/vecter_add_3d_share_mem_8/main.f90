@@ -21,7 +21,6 @@ program main
 	real(8),device,dimension(:,:,:),allocatable :: d_b
 	!Host output vector
 	real(8),device,dimension(:,:,:),allocatable :: d_c
-	real(8),device,dimension(:,:,:),allocatable :: d_a
 	
 	!integer ishap(3)
 	!integer,pointer,device :: idev(:,:,:)

@@ -5,7 +5,7 @@ FCMPI:=mpif90
 
 FCFLAGS:=-O0 -traceback
 
-FILES:= kernel.o main.o
+FILES:= dataTransfer.o kernel.o main.o
 
 MODS:=$(wildcard *.mod)
 
@@ -18,6 +18,9 @@ all: ${EXE}
 
 ${EXE}: ${FILES} ${MODS}
 	${FCMPI} -cuda -o $@ ${FILES}
+
+dataTransfer.o:
+	${FCMPI} ${FCFLAGS} -c dataTransfer.f90
 
 kernel.o:
 	${FCCUDA} ${FCFLAGS} -cuda -c kernel.cuf

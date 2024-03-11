@@ -10,7 +10,6 @@ program main
 	integer :: n_x, n_y, n_z
 	integer:: size_cube
 	integer:: total_element
-	real(8) :: t1 ,t2
 	! Host input vectors
 	real(8),dimension(:,:,:),allocatable :: h_a
 	real(8),dimension(:),allocatable :: h_a_1d
@@ -34,6 +33,11 @@ program main
 	type(cudaEvent) :: start_event, end_event
 	real :: elapsedTime,shortTime
 	integer:: best_x, best_y, best_z
+	
+	real(8) :: T1, T2, pass_t
+	pass_t = 0
+	T1 = 0
+	T2 = 0
 	
 	n = 1000
 	n_x = 24
@@ -75,8 +79,35 @@ program main
 	end do
 	print *, 'h_a Initialized'
 
+	call cpu_time(T1)
+	do i = 1,10
+		call dataTransfer_real8_3Dto1D_type0(h_a,h_a_1d)
+	end do
+	call cpu_time(T2)
+	print *, 'type0 used time:',T2-T1
 	
-	call dataTransfer_real8_3Dto1D_type0(h_a,h_a_1d)
+	call cpu_time(T1)
+	do i = 1,10
+		call dataTransfer_real8_3Dto1D_type0(h_a,h_a_1d)
+	end do
+	call cpu_time(T2)
+	print *, 'type0 used time:',T2-T1
+	
+	call cpu_time(T1)
+	do i = 1,10
+	call dataTransfer_real8_3Dto1D_type1(h_a,h_a_1d)
+	end do
+	call cpu_time(T2)
+	print *, 'type1 used time:',T2-T1
+	
+	call cpu_time(T1)
+	do i = 1,10000
+	call dataTransfer_real8_3Dto1D_type2(h_a,h_a_1d)
+	end do
+	call cpu_time(T2)
+	print *, 'type2 used time:',T2-T1
+	
+	
 	call dataTransfer_real8_3Dto1D_type0(h_b,h_b_1d)
 	
 	! start and end event create
@@ -94,7 +125,7 @@ program main
 	do ntimes_x = 1,10
 		do ntimes_y = 1,10
 			do ntimes_z = 1,6
-				if ((2**ntimes_x)*(2**ntimes_y)*(2**ntimes_z)> 2**12) then
+				if ((2**ntimes_x)*(2**ntimes_y)*(2**ntimes_z)> 2**10) then
 					continue
 				else
 					error =  cudaEventRecord(start_event,0)
@@ -103,7 +134,7 @@ program main
 									ceiling(real(n_y)/real(blockSize%y)),&
 									ceiling(real(n_z)/real(blockSize%z)))
 					! Execute the kernel
-					do i = 1,10000
+					do i = 1,100000
 						call vecAdd_kernel<<<gridSize, blockSize>>>(n_x, n_y, n_z, &
 																	d_a, d_b,d_c)
 					end do
@@ -149,7 +180,7 @@ program main
 		blockSize = dim3(2**ntimes,1,1)
 		gridSize = dim3(ceiling(real(n_x*n_y*n_z)/real(blockSize%x)), 1, 1)
 		! Execute the kernel
-		do i = 1,10000
+		do i = 1,100000
 			call vecAdd_kernel_1d<<<gridSize, blockSize>>>(n_x, n_y, n_z, &
 														d_a_1d, d_b_1d, d_c_1d)
 		end do
