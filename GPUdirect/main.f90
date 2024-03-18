@@ -1,5 +1,6 @@
 program mpicuda
 	use MPI
+	use cudafor
 	implicit none
 	
 	integer :: rank, ierr, num_procs, n, i, j, k
@@ -16,9 +17,8 @@ program mpicuda
 	real(8), device, dimension(:), allocatable  :: d_a_send
 	real(8), device, dimension(:), allocatable  :: d_a_recv
 	
-
 	n = 2**28
-	ntimes = 10
+	ntimes = 1
 	
 
 	
@@ -30,7 +30,7 @@ program mpicuda
 	if (rank .EQ. 1) then
 		print *, '================= Start N0D0 -> N1D0 ================='
 	end if
-	do j = 1, 28
+	do j = 28, 28
 		n = 2**j
 		total_time = 0
 		do k = 1, ntimes
@@ -47,7 +47,9 @@ program mpicuda
 					h_a(i) = rank*1.d0+1.d0
 				end do
 				d_a_send = h_a
+				
 			end if
+			ierr = cudaDeviceSynchronize()
 			call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 			
 			call cpu_time(T1)
@@ -56,11 +58,16 @@ program mpicuda
 			else if (rank .EQ. 1) then
 				call MPI_RECV(d_a_recv, n, MPI_REAL8, rank -1, 0, MPI_COMM_WORLD, status, ierr);
 				!print *,h_a
+				ierr = cudaDeviceSynchronize()
 			end if
-			
-			h_a = d_a_recv
 			call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 			call cpu_time(T2)
+			
+			if (rank .EQ. 1) then
+				h_a = d_a_recv
+			end if
+			
+			
 			
 			deallocate(h_a)
 			deallocate(h_a_send)
@@ -88,7 +95,7 @@ program mpicuda
 		print *, '================= Start N0D0 -> N0 -> N1-> N1D0 ================='
 	end if
 	
-	do j = 1, 28
+	do j = 28, 28
 		n = 2**j
 		total_time = 0
 		do k = 1, ntimes
@@ -106,7 +113,7 @@ program mpicuda
 				end do
 				d_a_send = h_a
 			end if
-			
+			ierr = cudaDeviceSynchronize()
 			call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 			
 			call cpu_time(T1)
@@ -119,6 +126,7 @@ program mpicuda
 			else if (rank .EQ. 1) then
 				call MPI_RECV(h_a_recv, n, MPI_REAL8, rank -1, 0, MPI_COMM_WORLD, status, ierr);
 				d_a = h_a_recv
+				ierr = cudaDeviceSynchronize()
 				!print *,h_a
 			end if
 			call MPI_BARRIER(MPI_COMM_WORLD, ierr)

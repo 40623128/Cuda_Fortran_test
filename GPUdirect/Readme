@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH -p gp1d
+#SBATCH -t 00:10:00
+#SBATCH --gres=gpu:8
+#SBATCH --cpus-per-task=1
+#SBATCH --account=MST109279
+#SBATCH --output=out4d.txt
+#SBATCH --error=error_log.txt
+#SBATCH -o node_01_GPU_08.%j.out
+nvprof --profile-child-processes -o GPUtest.%p{OMPI_COMM_WORLD_RANK}.nvvp mpirun -n 2 ./main  -mca btl ^openib
