@@ -37,14 +37,16 @@ program mpicuda
 			allocate(h_a(n))
 			allocate(h_a_send(n))
 			allocate(h_a_recv(n))
-		
-			allocate(d_a(n))
-			allocate(d_a_send(n))
-			allocate(d_a_recv(n))
+			do GPU = 1, num_gpus
+				istat=cudaSetDevice(gpu_devices(GPU))
+				allocate(d_a(n))
+				allocate(d_a_send(n))
+				allocate(d_a_recv(n))
+			end do
 
 			if (rank .EQ. 0) then
 				do i = 1,n
-					h_a(i) = rank*1.d0+1.d0
+					h_a(i) = 1.d0
 				end do
 				d_a_send = h_a
 				
@@ -82,7 +84,7 @@ program mpicuda
 			if (j .EQ. 1) then
 				print *,'pass time(s)','data size(bytes)','Bandwidth(Mb/s)'
 			end if
-			print *, total_time/ntimes, 2**j, (2**j/(total_time/ntimes))/2**20*8
+			print *, total_time/ntimes, 2**j, (2**j/(total_time/ntimes)/2**20/8)
 		end if
 	end do
 	
@@ -106,7 +108,7 @@ program mpicuda
 			allocate(d_a(n))
 			allocate(d_a_send(n))
 			allocate(d_a_recv(n))
-
+	
 			if (rank .EQ. 0) then
 				do i = 1,n
 					h_a(i) = rank*1.d0+1.d0

@@ -6,14 +6,10 @@ module cudamod
 
 	contains
 	
-	subroutine gpu_init(rank)
-		integer:: gpus,ierr,istat,GPU,rank
+	subroutine gpu_init(gpus)
+		integer:: gpus,ierr,istat,GPU
 		ierr=cudaGetDeviceCount(gpus)
-		print*, 'GPUs:',gpus
-		do GPU = 0,7
-			istat=cudaSetDevice(GPU)
-			call hello_gpukern<<<1,1>>>(GPU,rank)
-		end do
+		print*, 'GPUs:', gpus
 	end subroutine gpu_init
 	
 	subroutine usegpu(rank)
@@ -34,6 +30,16 @@ module cudamod
 		return
 
 	end subroutine usegpu
+	
+	subroutine gpu_error_check(istat)
+		implicit none
+		integer :: istat
+		if (istat /= 0) then
+            print *, "Error setting CUDA device"
+            stop
+        endif
+		return
+	end subroutine gpu_error_check
 
 	attributes(global) subroutine gpukern()
 		implicit none
@@ -53,5 +59,8 @@ module cudamod
 
 		return
 	end subroutine hello_gpukern
+	
+
+	
 	
 end module cudamod
