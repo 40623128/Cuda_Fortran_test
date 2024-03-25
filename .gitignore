@@ -33,3 +33,5 @@
 
 #
 *.nvvp
+*.nsys-rep
+*.sqlite

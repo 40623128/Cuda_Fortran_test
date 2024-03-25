@@ -10,3 +10,5 @@
 #SBATCH --error=error_log.txt
 #SBATCH -o node_01_GPU_08.%j.out
 nvprof --profile-child-processes -o GPUtest.%p{OMPI_COMM_WORLD_RANK}.nvvp mpirun -n 2 ./main  -mca btl ^openib
+or
+nsys profile --stats=true mpirun -n 2 ./main  -mca btl ^openib
