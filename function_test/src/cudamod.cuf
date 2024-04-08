@@ -1,0 +1,94 @@
+module cudamod
+
+	use cudafor
+
+	implicit none
+
+	contains
+	
+	subroutine gpu_init(gpus)
+		integer:: gpus,ierr,istat,GPU
+		ierr=cudaGetDeviceCount(gpus)
+		print*, 'GPUs:', gpus
+	end subroutine gpu_init
+	
+	subroutine usegpu(rank)
+
+		implicit none
+
+		integer, intent(in) :: rank
+		integer :: istat, nblock, ngrid
+
+		ngrid = 32
+		nblock = 32
+		if (rank .eq. 0) then
+			istat = cudaSetDevice(0)
+		end if
+
+		call gpukern<<<ngrid, nblock>>>()
+
+		return
+
+	end subroutine usegpu
+	
+	subroutine gpu_error_check(istat)
+		implicit none
+		integer :: istat
+		if (istat /= 0) then
+            print *, "Error setting CUDA device"
+            stop
+        endif
+		return
+	end subroutine gpu_error_check
+
+	attributes(global) subroutine gpukern()
+		implicit none
+		integer :: i
+
+		i = (blockidx%x-1)*blockdim%x + threadidx%x
+
+		return
+	end subroutine gpukern
+	
+	attributes(global) subroutine hello_gpukern(GPU,rank)
+		implicit none
+		integer :: i
+		integer,value, intent(in) :: GPU,rank
+
+		print*, 'hello world from Rank ',rank,' GPU ',GPU,'!'
+
+		return
+	end subroutine hello_gpukern
+	
+	attributes(global) subroutine add_gpukern(d_cube, nx, ny, nz, n_outside, d_cube2)
+		implicit none
+
+		integer, value, intent(in) ::  nx, ny, nz , n_outside
+		integer :: id_x, id_y, id_z
+		real(8), device:: d_cube(nx, ny, nz)
+		real(8), device:: d_cube2(nx, ny, nz)
+		
+		id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
+		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
+		
+		if ((id_x <= (nx + 2 * n_outside - 2)) .AND. (id_x >= 3)) then
+			if ((id_y <= (ny + 2 * n_outside - 2)) .AND. (id_y >= 3)) then
+				if ((id_z <= (nz + 2 * n_outside - 2)) .AND. (id_z >= 3)) then
+					d_cube2(id_x, id_y, id_z) = d_cube(id_x + 1, id_y, id_z) &
+											 + d_cube(id_x - 1, id_y, id_z) &
+											 + d_cube(id_x, id_y + 1, id_z) &
+											 + d_cube(id_x, id_y - 1, id_z) &
+											 + d_cube(id_x, id_y, id_z + 1) &
+											 + d_cube(id_x, id_y, id_z - 1)
+				end if
+			end if
+		end if
+		
+		return
+	end subroutine add_gpukern
+	
+
+	
+	
+end module cudamod

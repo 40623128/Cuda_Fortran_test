@@ -5,7 +5,6 @@ module kernel
         integer, value :: n
         real(8), device :: a(n), b(n), c(n)
         integer :: id
- 
         ! Get our global thread ID
         id = (blockidx%x-1)*blockdim%x + threadidx%x
  
