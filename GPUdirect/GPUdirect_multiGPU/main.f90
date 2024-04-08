@@ -31,20 +31,20 @@ program mpicuda
 	
 	!GPU init
 	call gpu_init(num_gpus)
-	num_gpus = 1
+	!num_gpus = 1
 	print*, 'num_gpus', num_gpus
 	!para init
 	n = 0
 	
 	!test times
-	ntimes = 5
+	ntimes = 1
 
 	!give every gpu a index
 	allocate(gpu_devices(num_gpus))
 
 	do GPU = 1, num_gpus
-		!gpu_devices(GPU) = GPU - 1
-		gpu_devices(GPU) = 7
+		gpu_devices(GPU) = GPU - 1
+		!gpu_devices(GPU) = 7
 	end do
 	
 	!if (rank .EQ. 1) then
@@ -54,7 +54,7 @@ program mpicuda
 	! Start testing
 	! j is n's size (if j = 20 then n = 2^20 ......) 
 	! n is data size
-	do j = 1, 27
+	do j = 20, 20
 		n = 2**j
 		total_time_1 = 0
 		total_time_2 = 0
@@ -107,10 +107,12 @@ program mpicuda
 			! MPI Send & Recv (GPUDirect RDMA)(GPU to GPU)
 			if (rank .EQ. 0) then
 				do GPU = 1, num_gpus
+					gpu_istat=cudaSetDevice(gpu_devices(GPU))
 					call MPI_SEND(d_a_send, n, MPI_REAL8, rank +1, 0, MPI_COMM_WORLD, istat)
 				end do
 			else if (rank .EQ. 1) then
 				do GPU = 1, num_gpus
+					gpu_istat=cudaSetDevice(gpu_devices(GPU))
 					call MPI_RECV(d_a_recv, n, MPI_REAL8, rank -1, 0, MPI_COMM_WORLD, status, istat)
 				end do
 			end if
@@ -228,10 +230,12 @@ program mpicuda
 			! MPI send & recv
 			if (rank .EQ. 0) then
 				do GPU = 1, num_gpus
+					gpu_istat=cudaSetDevice(gpu_devices(GPU))
 					call MPI_SEND(h_a_send(GPU,1), n, MPI_REAL8, rank +1, 0, MPI_COMM_WORLD, istat)
 				end do
 			else if (rank .EQ. 1) then
 				do GPU = 1, num_gpus
+					gpu_istat=cudaSetDevice(gpu_devices(GPU))
 					call MPI_RECV(h_a_recv(GPU,1), n, MPI_REAL8, rank -1, 0, MPI_COMM_WORLD, status, istat)
 				end do
 			end if

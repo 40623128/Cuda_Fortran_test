@@ -11,4 +11,6 @@
 #SBATCH -o node_01_GPU_08.%j.out
 nvprof --profile-child-processes -o GPUtest.%p{OMPI_COMM_WORLD_RANK}.nvvp mpirun -n 2 ./main  -mca btl ^openib
 or
-nsys profile --stats=true mpirun -n 2 ./main  -mca btl ^openib
+nsys profile --trace=mpi,cuda --mpi-impl=openmpi mpirun -n 2 ./main  -mca btl ^openib
+
+mpirun -n 2 nsys profile -o output_name_%q ./main  -mca btl ^openib
