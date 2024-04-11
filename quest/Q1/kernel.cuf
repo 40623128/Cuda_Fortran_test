@@ -1,0 +1,87 @@
+module kernel
+	implicit none
+    contains
+    ! CUDA kernel. Each thread takes care of one element of c
+    attributes(global) subroutine vecAdd_kernel(n, a, b, c)
+        integer, value :: n
+        real(8) , device:: a(:), b(:)
+		real(8) , device:: c(:)
+        integer :: id
+ 
+        ! Get our global thread ID
+        id = (blockidx%x-1)*blockdim%x + threadidx%x
+ 
+        ! Make sure we do not go out of bounds
+        if (id <= n) then
+            c(id) = a(id) + b(id)
+        endif
+    end subroutine vecAdd_kernel
+	
+	attributes(global) subroutine test_kernel()
+		integer :: id
+        id = (blockidx%x-1)*blockdim%x + threadidx%x
+		
+    end subroutine test_kernel
+	
+	attributes(global) subroutine meshAdd_3Dkernel(mesh, n_x_total, n_y_total, n_z_total, n_outside, mesh_out)
+        integer, value :: n_x_total, n_y_total, n_z_total, n_outside
+		
+        real(8) , device:: mesh(:,:,:)
+		real(8) , device:: mesh_out(:,:,:)
+        integer :: id_x, id_y, id_z
+ 
+        ! Get our global thread ID
+        id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
+		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
+ 
+        ! Make sure we do not go out of bounds
+        if ((id_x > n_outside) .and.(id_x <= n_x_total - n_outside)) then
+			if ((id_y > n_outside) .and.(id_y <= n_y_total - n_outside)) then
+				if ((id_z > n_outside) .and.(id_z <= n_z_total - n_outside)) then
+					! Center
+					mesh_out(id_x, id_y, id_z) = mesh(id_x-1, id_y, id_z) +  mesh(id_x+1, id_y, id_z) &
+												+ mesh(id_x, id_y-1, id_z) +  mesh(id_x, id_y+1, id_z) &
+												+ mesh(id_x, id_y, id_z-1) +  mesh(id_x, id_y, id_z+1) 
+				endif
+		   endif
+        endif
+    end subroutine meshAdd_3Dkernel
+	
+	attributes(global) subroutine meshAdd2Tier_3Dkernel(mesh_0, n_x_total, n_y_total, n_z_total, n_outside, mesh_1)
+        integer, value :: n_x_total, n_y_total, n_z_total, n_outside
+		
+        real(8) , device:: mesh_0(:,:,:)
+		real(8) , device:: mesh_1(:,:,:)
+        integer :: id_x, id_y, id_z
+		integer :: i
+        ! Get our global thread ID
+        id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+		id_y = (blockidx%y-1)*blockdim%y + threadidx%y
+		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
+ 
+        ! Make sure we do not go out of bounds
+		if ((id_x > n_outside-1) .and.(id_x <= n_x_total - n_outside-1)) then
+			if ((id_y > n_outside-1) .and.(id_y <= n_y_total - n_outside-1)) then
+				if ((id_z > n_outside-1) .and.(id_z <= n_z_total - n_outside-1)) then
+					! Center
+					mesh_1(id_x, id_y, id_z) = mesh_0(id_x-1, id_y, id_z) +  mesh_0(id_x+1, id_y, id_z) &
+												+ mesh_0(id_x, id_y-1, id_z) +  mesh_0(id_x, id_y+1, id_z) &
+												+ mesh_0(id_x, id_y, id_z-1) +  mesh_0(id_x, id_y, id_z+1) 
+				endif
+		   endif
+		endif
+		call syncthreads()
+		if ((id_x > n_outside) .and.(id_x <= n_x_total - n_outside)) then
+			if ((id_y > n_outside) .and.(id_y <= n_y_total - n_outside)) then
+				if ((id_z > n_outside) .and.(id_z <= n_z_total - n_outside)) then
+					! Center
+					mesh_0(id_x, id_y, id_z) = mesh_1(id_x-1, id_y, id_z) +  mesh_1(id_x+1, id_y, id_z) &
+												+ mesh_1(id_x, id_y-1, id_z) +  mesh_1(id_x, id_y+1, id_z) &
+												+ mesh_1(id_x, id_y, id_z-1) +  mesh_1(id_x, id_y, id_z+1) 
+				endif
+		   endif
+		endif
+		
+    end subroutine meshAdd2Tier_3Dkernel
+end module kernel
