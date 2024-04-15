@@ -84,4 +84,29 @@ module kernel
 		endif
 		
     end subroutine meshAdd2Tier_3Dkernel
+	
+	attributes(global) subroutine meshAdd_1Dkernel(mesh, gpu_cube, n_x_total, n_y_total, n_z_total, n_outside, mesh_out)
+        integer, value :: gpu_cube, n_x_total, n_y_total, n_z_total, n_outside
+		
+        real(8) , device:: mesh(:,:,:,:)
+		real(8) , device:: mesh_out(:,:,:,:)
+        integer :: id_x
+		integer :: i,j,k
+ 
+        ! Get our global thread ID
+        id_x = (blockidx%x-1)*blockdim%x + threadidx%x
+ 
+        ! Make sure we do not go out of bounds
+        if (id_x <= gpu_cube) then
+			do i = 1+n_outside, n_x_total-n_outside
+				do j = 1+n_outside, n_y_total-n_outside
+					do k = 1+n_outside, n_z_total-n_outside
+						mesh_out(id_x, i, j, k) = mesh(id_x, i-1, j, k) +  mesh(id_x, i+1, j, k) &
+													+ mesh(id_x, i, j-1, k) +  mesh(id_x, i, j+1, k) &
+													+ mesh(id_x, i, j, k-1) +  mesh(id_x, i, j, k+1)
+					end do
+				end do
+			end do
+        end if
+    end subroutine meshAdd_1Dkernel
 end module kernel

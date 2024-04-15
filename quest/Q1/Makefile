@@ -5,7 +5,7 @@ FCMPI:=mpif90
 
 FCFLAGS:=-O0 -traceback
 
-FILES:= kernel.o cudamod.o main.o
+FILES:= kernel.o cudamod.o gputype.o main.o
 
 MODS:=$(wildcard *.mod)
 
@@ -24,6 +24,9 @@ kernel.o:
 	
 cudamod.o:
 	${FCCUDA} ${FCFLAGS} -cuda -c cudamod.cuf
+	
+gputype.o:
+	${FCCUDA} ${FCFLAGS} -cuda -c gputype.cuf
 
 main.o:
 	${FCMPI} ${FCFLAGS} -cuda -c main.f90
