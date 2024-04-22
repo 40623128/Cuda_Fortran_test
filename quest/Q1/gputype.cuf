@@ -6,9 +6,12 @@ module gputype
 	type TGPUplan
 		real(8),dimension(:,:,:,:),pointer :: gpu_all_mesh_1
 		real(8),dimension(:,:,:,:),pointer :: gpu_all_mesh_2
+
 		real(8),dimension(:,:,:,:),pointer :: gpu_all_mesh_3
 		real(8), device, dimension(:,:,:,:), pointer :: d_mesh_1
 		real(8), device, dimension(:,:,:,:), pointer :: d_mesh_2
+		real(8), device,dimension(:,:,:),pointer :: gpu_mesh_1
+		real(8), device,dimension(:,:,:),pointer :: gpu_mesh_2
 		integer(kind=cuda_stream_kind) :: stream1
 	end type TGPUplan
 	
