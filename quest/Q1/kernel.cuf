@@ -23,12 +23,11 @@ module kernel
 		
     end subroutine test_kernel
 	
-	attributes(global) subroutine meshAdd_3Dkernel(mesh, n_x_total, n_y_total, n_z_total, n_outside, mesh_out)
-        integer, value :: n_x_total, n_y_total, n_z_total, n_outside
-		
-        real(8) , device:: mesh(:,:,:)
-		real(8) , device:: mesh_out(:,:,:)
-        integer :: id_x, id_y, id_z
+	attributes(global) subroutine meshAdd_3Dkernel(mesh, gpu_cube, n_x_total, n_y_total, n_z_total, n_outside, mesh_out)
+        integer, value :: gpu_cube, n_x_total, n_y_total, n_z_total, n_outside
+        real(8) , device:: mesh(:,:,:,:)
+		real(8) , device:: mesh_out(:,:,:,:)
+        integer :: id_x, id_y, id_z, i
  
         ! Get our global thread ID
         id_x = (blockidx%x-1)*blockdim%x + threadidx%x
@@ -36,16 +35,19 @@ module kernel
 		id_z = (blockidx%z-1)*blockdim%z + threadidx%z
  
         ! Make sure we do not go out of bounds
-        if ((id_x > n_outside) .and.(id_x <= n_x_total - n_outside)) then
+
+		if ((id_x > n_outside) .and.(id_x <= n_x_total - n_outside)) then
 			if ((id_y > n_outside) .and.(id_y <= n_y_total - n_outside)) then
 				if ((id_z > n_outside) .and.(id_z <= n_z_total - n_outside)) then
-					! Center
-					mesh_out(id_x, id_y, id_z) = mesh(id_x-1, id_y, id_z) +  mesh(id_x+1, id_y, id_z) &
-												+ mesh(id_x, id_y-1, id_z) +  mesh(id_x, id_y+1, id_z) &
-												+ mesh(id_x, id_y, id_z-1) +  mesh(id_x, id_y, id_z+1) 
+					do i = 1,gpu_cube
+						mesh_out(i, id_x, id_y, id_z) = mesh(i, id_x-1, id_y, id_z) +  mesh(i, id_x+1, id_y, id_z) &
+													 + mesh(i, id_x, id_y-1, id_z) +  mesh(i, id_x, id_y+1, id_z) &
+													 + mesh(i, id_x, id_y, id_z-1) +  mesh(i, id_x, id_y, id_z+1) 
+					end do
 				endif
 		   endif
-        endif
+		endif
+	
     end subroutine meshAdd_3Dkernel
 	
 	attributes(global) subroutine meshAdd2Tier_3Dkernel(mesh_0, n_x_total, n_y_total, n_z_total, n_outside, mesh_1)
